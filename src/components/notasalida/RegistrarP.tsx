@@ -182,7 +182,7 @@ export default function RegistrarP() {
     console.log("Enviando los siguientes productos:", productosARegistrar);
 
     try {
-        const response = await axios.post("http://api.uniecosanmateo.icu/api/products", 
+        const response = await axios.post("https://api.uniecosanmateo.icu/api/products", 
             { productos: productosARegistrar },  // Enviar como objeto con array de productos
             {
                 headers: {

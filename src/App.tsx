@@ -27,6 +27,8 @@ import NotaSalida from "./components/notasalida/NotaSalida";
 import RegistrarP from "./components/notasalida/RegistrarP";
 import Fases from "./components/notasalida/fases";
 import ResetPass from "./pages/AuthPages/ResetPass";
+import UpdatePass from "./pages/AuthPages/UpdatePass";
+
 
 export default function App() {
   return (
@@ -48,8 +50,6 @@ export default function App() {
             <Route path="/registrarp" element={<RegistrarP />} />
             <Route path="/fases" element={<Fases />} />
             <Route path="/notasalida" element={<NotaSalida />} />
-            
-
 
               {/* Tables */}
               <Route path="/basic-tables" element={<BasicTables />} />
@@ -72,6 +72,7 @@ export default function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/resetpassform" element={<ResetPass />} />
+          <Route path="/updatepass" element={<UpdatePass />} />
 
 
           {/* Fallback Route */}

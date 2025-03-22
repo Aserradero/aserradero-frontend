@@ -1,101 +1,106 @@
-import { useState, useRef } from "react";
-import { Link } from "react-router";
-import { useNavigate } from "react-router";
-//import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
-import { EyeCloseIcon, EyeIcon } from "../../icons";
-import Label from "../form/Label";
-import Input from "../form/input/InputField";
-import { Button } from "primereact/button";
+import React, { useRef, useState, useEffect } from "react";
 import { Toast } from "primereact/toast";
-import axios from "axios";
 import { Image } from "primereact/image";
-import "./sig.css";
+import { Button } from "primereact/button";
+import Input from "../form/input/InputField";
+import axios from "axios";
+import { InputOtp } from "primereact/inputotp";
+import { useNavigate } from "react-router";
+
 export default function ResetPassForm() {
-  //utilizar un hook para redirigir
-  const navigate = useNavigate();
   //usando toast para ver etiquetas flotantes
   const toast = useRef<Toast | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
+  //usando una varible para guardar el correo
+  const [email, setEmail] = useState<string>("");
 
-  //Establecer las variables y tipo de dato
-  interface FormData {
-    email: string;
-    password: string;
-  }
+  const [token, setTokens] = useState<string | number | undefined>("");
 
-  //Establecer el valor de las variables
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-  });
+  const [codigo, setCodigo] = useState<number | null>(null); // Almacena el código
 
-  //Manejar los ambos imputs
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const [emailVe, setEmailVe] = useState<string>("");
+  //Utilizar hook para redirigir
+  const navigate = useNavigate();
+
+  //Actualizar el valor del correo que se ingreso en el input
+  const handleChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
   };
 
-  //  Manejar el login
+  //ver el cambio en el input del correo
+  useEffect(() => {
+    console.log("Correo a enviar:", email);
+  }, [email]); // Dependencia de emal
+
+  //ver el cambio en el input del correo
+  useEffect(() => {
+    console.log("Token que se esta ingresando:", token);
+  }, [token]); // Dependencia de emal
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // Evita el comportamiento por defecto del formulario
+    e.preventDefault();
 
-    console.log("Email:", formData.email);
-    console.log("Password:", formData.password);
+    if (email !== "") {
+      toast.current?.show({
+        severity: "success",
+        summary: "Se envio a su correo un codigo para restaurar su contraseña",
+        detail: "Codigo enviado",
+        life: 5000,
+      });
 
-    try {
-      // Hacer la petición `POST` al backend (Laravel Sanctum)
-      if (
-        formData.email.trim().length > 0 &&
-        formData.password.trim().length > 0
-      ) {
-        if (formData.password.trim().length >= 8) {
-          const response = await axios.post(
-            "https://api.uniecosanmateo.icu/api/user/login",
-            {
-              email: formData.email,
-              password: formData.password,
-            }
-          );
-
-          // Obtener token y usuario desde la respuesta
-          const { token, user } = response.data;
-
-          //  Guardar el token y usuario en `localStorage`
-          localStorage.setItem("token", token);
-          localStorage.setItem("user", JSON.stringify(user));
-
-          // Mostrar mensaje de éxito con Toast
-          toast.current?.show({
-            severity: "success",
-            summary: "Bienvenido",
-            detail: `Inicio de sesión exitoso, ${user.name}`,
-            life: 1000,
-          });
-          // Redirigir al Dashboard después de 1.1 segundos
-          setTimeout(() => navigate("/home"), 1100);
-        } else {
-          toast.current?.show({
-            severity: "error",
-            summary: "Acceso denegado",
-            detail: "La contraseña no puede ser menor a 8 caracteres",
-            life: 2000,
-          });
-        }
-      } else {
-        toast.current?.show({
-          severity: "error",
-          summary: "Acceso denegado",
-          detail: "Ingrese sus credenciales",
-          life: 1000,
+      try {
+        const response = await axios.post("https://api.uniecosanmateo.icu/api/email", {
+          email,
         });
+
+        const { emailVe, codigo } = response.data;
+
+        // Actualizamos el estado
+        setCodigo(codigo);
+        setEmailVe(emailVe); // Guardamos el correo verificado en el estado
+
+        // Comprobamos si el estado se actualizó correctamente
+        console.log("Código enviado al correo: ", codigo);
+        console.log("Correo verificado: ", emailVe); // Aquí debería salir el correo enviado en la respuesta JSON
+        localStorage.setItem("correove", emailVe);
+      } catch (error) {
+        console.log("El correo no existe");
       }
-    } catch (error) {
+    } else {
       toast.current?.show({
         severity: "error",
-        summary: "Acceso denegado",
-        detail: "Correo o contraseña incorrectos",
+        summary: "No se ingreso ningun correo",
+        detail: "Verifique",
         life: 2000,
       });
     }
+  };
+
+  const handleSubmitVerficar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Datos a comparar");
+    console.log("Email ingresado: ", email);
+    console.log("Email verificado: ", emailVe);
+    console.log("Codigo enviado el laravel: ", codigo);
+    console.log("Condigo ingresado actualmente: ", token);
+    if (
+      email.trim() === emailVe.trim() &&
+      String(codigo).trim() === String(token).trim() &&
+      token !== undefined
+    ) {
+      navigate("/updatepass");
+    } else {
+      toast.current?.show({
+        severity: "error",
+        summary: "El codigo no es correcto",
+        detail: "Verifique",
+        life: 2000,
+      });
+    }
+  };
+
+   // Función para manejar la redirección
+   const handleGoBack = () => {
+    navigate("/"); // Redirige al usuario a la ruta "/"
   };
 
   return (
@@ -106,85 +111,53 @@ export default function ResetPassForm() {
         <div>
           <div className="mb-5 sm:mb-8">
             <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md text-center">
-              Inicia sesión
+              Recupera tu contraseña
             </h1>
-
-            <div className="card flex justify-center m-2">
-              <Image src="/images/logo.png" alt="Image" width="150" preview />
-            </div>
-
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              ¡Ingresa tu correo y contraseña para ingresar!
-            </p>
           </div>
-          <div>
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-6">
-                <div>
-                  <Label>
-                    Correo de usuario <span className="text-error-500">*</span>{" "}
-                  </Label>
-                  <Input
-                    name="email"
-                    type="email"
-                    placeholder="info@gmail.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div>
-                  <Label>
-                    Contraseña <span className="text-error-500">*</span>{" "}
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Ingresa tu contraseña"
-                      value={formData.password}
-                      onChange={handleChange}
-                    />
-                    <span
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-                    >
-                      {showPassword ? (
-                        <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                      ) : (
-                        <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                      )}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-end">
-                  <Link
-                    to="/resetpass"
-                    className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </Link>
-                </div>
-                <div>
-                  <Button
-                    className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-green-600 shadow-theme-xs hover:bg-green-700"
-                    severity="success"
-                    label="Ingresar"
-                  ></Button>
-                </div>
-              </div>
-            </form>
+          <div className="card flex justify-center m-2">
+            <Image src="/images/logo.png" alt="Image" width="150" preview />
+          </div>
 
-            <div className="mt-5">
-              <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                No tienes cuenta todavia? {""}
-                <Link
-                  to="/signup"
-                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
-                >
-                  Registrarse
-                </Link>
-              </p>
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-8">
+              <div className="sm:col-span-1 mt-2">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
+                  Ingresa tu correo para recuperar tu contraseña
+                </p>
+
+                <Input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="Ingresa tu correo"
+                  onChange={handleChangeEmail}
+                  className="mt-5"
+                />
+              </div>
+
+              <div>
+                <Button
+                  className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-green-600 shadow-theme-xs hover:bg-green-700"
+                  severity="success"
+                  label="Enviar codigo"
+                ></Button>
+              </div>
             </div>
+          </form>
+          <form className="mt-5" onSubmit={handleSubmitVerficar}>
+            <div className="flex justify-center items-center">
+              <InputOtp
+                value={token}
+                onChange={(e) => setTokens(e.value ?? "")}
+                mask
+              />
+            </div>
+            <div className="flex justify-center items-center mt-4">
+              <Button label="Verificar" link className="p-0"></Button>
+            </div>
+          </form>
+          <div className="flex justify-center items-center mt-4">
+            <Button label="Regresar" onClick={handleGoBack} link className="p-0"></Button>
           </div>
         </div>
       </div>

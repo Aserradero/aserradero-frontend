@@ -48,8 +48,7 @@ export default function NotaSalida() {
   // Función para recargar los datos de la API
   const recargarMateriaPrima = async () => {
     try {
-      const response = await axios.get<Product[]>(
-        "http://api.uniecosanmateo.icu/api/rawMaterials"
+      const response = await axios.get<Product[]>("https://api.uniecosanmateo.icu/api/rawMaterials"
       );
       setProducts(response.data);
     } catch (error) {
@@ -99,8 +98,7 @@ export default function NotaSalida() {
           identificadorP: numeroProduccion,
         }));
 
-        await axios.put(
-          "http://api.uniecosanmateo.icu/api/rawMaterial/identificadorP",
+        await axios.put("https://api.uniecosanmateo.icu/api/rawMaterial/identificadorP",
           updatedProducts
         );
         console.log("Productos actualizados en la API");

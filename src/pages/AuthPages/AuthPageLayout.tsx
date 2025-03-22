@@ -19,7 +19,7 @@ export default function AuthLayout({
             <GridShape />
             <div className="relative w-full h-160">
             <div className="absolute inset-0 flex items-center justify-center bg-opacity-50">
-            <p className="text-gray-100 text-xl text-center font-bold text-shadow-custom">
+            <p className="text-gray-100 text-2xl underline underline-offset-8 text-center font-bold text-shadow-custom">
               Bienvenido a la Unidad Económica Especializada de Aprovechamiento Forestal Comunal "San Mateo"
             </p>
             </div>

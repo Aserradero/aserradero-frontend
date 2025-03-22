@@ -109,7 +109,8 @@ export default function SignUpForm() {
     if (!validateForm()) return; // Si hay errores, no enviamos el formulario
 
     try {
-      const response = await axios.post("https://api.uniecosanmateo.icu/api/user",
+      const response = await axios.post(
+        "https://api.uniecosanmateo.icu/api/user",
         formData,
         {
           headers: { "Content-Type": "application/json" },
@@ -154,24 +155,21 @@ export default function SignUpForm() {
       newErrors.nombreUsuario = "El usuario debe tener más de 5 caracteres.";
     }
 
-    if (formData.password.length <= 8) {
+    if (formData.password.length <= 8 ) {
       newErrors.password = "La contraseña debe tener más de 8 caracteres.";
     }
 
-    if (formData.password !== repetirCon) {
+    if (formData.password !== repetirCon ) {
       newErrors.password = "Las contraseñas que ingresaste deben ser iguales.";
     }
 
     if (
-      (claveJP.trim() === claveS.trim() &&
-        formData.rol === "Jefe de patio") ||
-      (claveAd.trim() === claveS.trim() &&
-        formData.rol === "Administrador")
+      (claveJP.trim() === claveS.trim() && formData.rol === "Jefe de patio") ||
+      (claveAd.trim() === claveS.trim() && formData.rol === "Administrador")
     ) {
       console.log("");
-    }else{
+    } else {
       newErrors.password = "La clave de seguridad no es válida.";
-
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -311,6 +309,35 @@ export default function SignUpForm() {
 
                   <div className="sm:col-span-1">
                     <Label>
+                      Ingresa la clave de seguridad
+                      <span className="text-error-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        name="claveSeguridad"
+                        placeholder="Clave de seguridad"
+                        type={showPasswordTres ? "text" : "password"}
+                        onChange={handleChangeCS}
+                        value={claveS}
+                      />
+                      <span
+                        onClick={() => setShowPasswordTres(!showPasswordTres)}
+                        className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
+                      >
+                        {showPasswordTres ? (
+                          <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                        ) : (
+                          <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+
+                  <div className="sm:col-span-1">
+                    <Label>
                       Contraseña<span className="text-error-500">*</span>
                     </Label>
                     <div className="relative">
@@ -333,9 +360,7 @@ export default function SignUpForm() {
                       </span>
                     </div>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                   <div className="sm:col-span-1">
                     <Label>
                       Contraseña<span className="text-error-500">*</span>
@@ -353,32 +378,6 @@ export default function SignUpForm() {
                         className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
                       >
                         {showPasswordDos ? (
-                          <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                        ) : (
-                          <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-                        )}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="sm:col-span-1">
-                    <Label>
-                      Ingresa la clave de seguridad
-                      <span className="text-error-500">*</span>
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        name="claveSeguridad"
-                        placeholder="Clave de seguridad"
-                        type={showPasswordTres ? "text" : "password"}
-                        onChange={handleChangeCS}
-                        value={claveS}
-                      />
-                      <span
-                        onClick={() => setShowPasswordTres(!showPasswordTres)}
-                        className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-                      >
-                        {showPasswordTres ? (
                           <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
                         ) : (
                           <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
