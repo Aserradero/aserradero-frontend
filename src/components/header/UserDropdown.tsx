@@ -28,11 +28,8 @@ export default function UserDropdown() {
 
     try {
       await axios.post(
-<<<<<<< HEAD
-        "http://localhost:8000/api/logout",
-=======
+
         "https://api.uniecosanmateo.icu/api/logout",
->>>>>>> 98aed0fc0715c1b3809745ca585346eb3efb3195
         {},
         {
           headers: {
