@@ -105,7 +105,7 @@ export default function Fases() {
           (product) => product.identificadorP === numeroProduccion
         ).length
       );
-      
+
       if (
         (numeroProduccion == 0 && accesoLocal == "acceso") ||
         cantidadMP != 0
@@ -144,22 +144,18 @@ export default function Fases() {
       accept: () => {
         if (products?.length) {
           actualizarFecha();
-          setCantidadMP(0);
+          //setCantidadMP(-1);
           console.log(
             "Una vez terminada la produccion y seleccionado el boton el numero es: ",
             numeroProduccion
           );
           console.log("Entro a si");
-
-          setProducts([]);
-
           toast.current?.show({
             severity: "success",
             summary: "Aceptado",
             detail: "Producción terminada.",
             life: 3000,
           });
-          console.log("Entro a no");
         } else {
           toast.current?.show({
             severity: "error",
@@ -179,6 +175,7 @@ export default function Fases() {
     const fechaActual = new Date();
     const fechaFormateada = fechaActual.toLocaleString("sv-SE");
     setCantidadMP(0);
+    setProducts([]);
 
     try {
       const updatedProducts = products
@@ -197,6 +194,8 @@ export default function Fases() {
       setIsUpdated(true); // Marcar que la actualización se completó
 
       setProducts([]);
+      localStorage.removeItem("cantidadArreglo"); // <--- Limpia aquí
+      localStorage.removeItem("pasarT"); // <--- Limpia aquí
     } catch (error) {
       console.error("Error al actualizar la fecha", error);
     }
