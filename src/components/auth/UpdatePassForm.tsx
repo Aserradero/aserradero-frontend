@@ -78,7 +78,7 @@ export default function UpdatePassForm() {
 
     try {
       const response = await axios.post(
-        "https://uniecosanmateo.icu/api/update-pass",
+        "https://api.uniecosanmateo.icu/api/update-pass",
         {
           email,
           new_password: newPassword,
