@@ -30,14 +30,11 @@ export default function Fases() {
   }
   //const dt = useRef(null);
   const toast = useRef<Toast>(null); // Tipar la referencia del Toast
-
+  //const [acceso, setAcceso] = useState<string | null>();
   // Estados para almacenar los productos y productos seleccionados
   const [products, setProducts] = useState<Product[]>([]);
   // Estado para almacenar el número de producción
-  const [numeroProduccion] = useState<number>(() =>
-    parseInt(localStorage.getItem("numeroProduccion") ?? "1", 10)
-  );
-
+  const [numeroProduccion, setNumeroProduccion] = useState<number>(0);
   // Estado para la fase seleccionada
   const [selectedFase, setSelectedFase] = useState<Fase | null>(null);
   const [value, setValue] = useState<number>(0);
@@ -51,6 +48,9 @@ export default function Fases() {
     "En clasificacion y almacenamiento": 80,
     "Produccion finalizada": 100,
   };
+  const [cantidadMP, setCantidadMP] = useState<Number>(
+    Number(localStorage.getItem("cantidadArreglo"))
+  );
 
   // Actualizar el progreso cuando se selecciona una fase
   useEffect(() => {
@@ -80,20 +80,50 @@ export default function Fases() {
     { name: "Produccion finalizada", code: "Produccion finalizada" },
   ];
 
-  // useEffect para guardar el número de producción en localStorage
+  // useEffect para recargar el numero de produccion
   useEffect(() => {
-    localStorage.setItem("numeroProduccion", numeroProduccion.toString());
     recargarMateriaPrima();
+    console.log(
+      "Numero de produccion que se mostrara en la tabla de acuerdo a los productos: ",
+      numeroProduccion
+    );
   }, [numeroProduccion]);
+
+  //cambiara cuando la cantidad cambie
+  useEffect(() => {
+    localStorage.setItem("cantidadArreglo", String(cantidadMP));
+  }, [cantidadMP]); // Solo se ejecutara cuando la cantidad cambie
 
   // Función para recargar los datos de la API
   const recargarMateriaPrima = async () => {
     if (isUpdated) return;
     try {
-      const response = await axios.get<Product[]>(
-        "https://api.uniecosanmateo.icu/api/rawMaterials"
+      const accesoLocal = localStorage.getItem("pasarT");
+      console.log("Se esta mostrando en el condicional: ", accesoLocal);
+      setCantidadMP(
+        products.filter(
+          (product) => product.identificadorP === numeroProduccion
+        ).length
       );
-      setProducts(response.data);
+      
+      if (
+        (numeroProduccion == 0 && accesoLocal == "acceso") ||
+        cantidadMP != 0
+      ) {
+        const response = await axios.get<Product[]>(
+          "https://api.uniecosanmateo.icu/api/rawMaterials"
+        );
+        setProducts(response.data);
+        const identificadorMa = response.data.reduce((max, current) => {
+          return current.identificadorP > max.identificadorP ? current : max;
+        }, response.data[0]);
+        console.log(
+          "Fase de produccion en la que esta la fase: ",
+          identificadorMa.identificadorP
+        );
+
+        setNumeroProduccion(identificadorMa.identificadorP);
+      }
     } catch (error) {
       console.error("Error al obtener los productos", error);
     }
@@ -114,7 +144,22 @@ export default function Fases() {
       accept: () => {
         if (products?.length) {
           actualizarFecha();
+          setCantidadMP(0);
+          console.log(
+            "Una vez terminada la produccion y seleccionado el boton el numero es: ",
+            numeroProduccion
+          );
+          console.log("Entro a si");
+
           setProducts([]);
+
+          toast.current?.show({
+            severity: "success",
+            summary: "Aceptado",
+            detail: "Producción terminada.",
+            life: 3000,
+          });
+          console.log("Entro a no");
         } else {
           toast.current?.show({
             severity: "error",
@@ -122,6 +167,7 @@ export default function Fases() {
             detail: "No hay productos para exportar.",
             life: 3000,
           });
+          console.log("Entro a no");
         }
       },
       reject,
@@ -132,13 +178,16 @@ export default function Fases() {
     // Obtener la fecha actual
     const fechaActual = new Date();
     const fechaFormateada = fechaActual.toLocaleString("sv-SE");
+    setCantidadMP(0);
 
     try {
-      const updatedProducts = products.map((product) => ({
-        ...product,
-        identificadorP: numeroProduccion - 1,
-        updated_at: fechaFormateada,
-      }));
+      const updatedProducts = products
+        .filter((product) => product.identificadorP === numeroProduccion)
+        .map((product) => ({
+          ...product,
+          identificadorP: numeroProduccion,
+          updated_at: fechaFormateada,
+        }));
 
       await axios.put(
         "https://api.uniecosanmateo.icu/api/rawMaterial/identificadorP",
@@ -167,14 +216,16 @@ export default function Fases() {
     });
   };
   const totalPiezas = products.filter(
-    (product) => product.identificadorP === numeroProduccion - 1
+    (product) => product.identificadorP === numeroProduccion
   ).length;
   const volumen = products
-    .filter((product) => product.identificadorP === numeroProduccion - 1)
+    .filter((product) => product.identificadorP === numeroProduccion)
     .reduce((total, product) => total + product.metroCR, 0);
 
   return (
     <div className="container mx-auto p-2">
+      <Toast ref={toast} position="bottom-left" />
+
       <PageMeta
         title="Fases de produccion"
         description="Cambia las fases de produccion"
@@ -256,7 +307,7 @@ export default function Fases() {
       <div className="card">
         <DataTable
           value={products.filter(
-            (product) => product.identificadorP === numeroProduccion - 1
+            (product) => product.identificadorP === numeroProduccion
           )}
           size="small"
           paginator
