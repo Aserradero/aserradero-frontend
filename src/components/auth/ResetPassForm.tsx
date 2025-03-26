@@ -48,7 +48,7 @@ export default function ResetPassForm() {
       });
 
       try {
-        const response = await axios.post("https://api.uniecosanmateo.icu/api/email", {
+        const response = await axios.post("https://uniecosanmateo.icu/api/email", {
           email,
         });
 
