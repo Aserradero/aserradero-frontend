@@ -27,8 +27,7 @@ export default function UserDropdown() {
     localStorage.removeItem("user");
 
     try {
-      await axios.post(
-        "https://api.uniecosanmateo.icu/api/logout",
+      await axios.post("https://api.uniecosanmateo.icu/api/logout",
         {},
         {
           headers: {

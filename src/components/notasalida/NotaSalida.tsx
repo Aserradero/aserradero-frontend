@@ -12,7 +12,6 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import PageMeta from "../../components/common/PageMeta";
 
-
 export default function NotaSalida() {
   // Definir el tipo para los productos
   interface Product {
@@ -35,26 +34,36 @@ export default function NotaSalida() {
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
 
   // Estado para almacenar el número de producción
-  const [numeroProduccion, setNumeroProduccion] = useState<number>(() =>
-    parseInt(localStorage.getItem("numeroProduccion") ?? "1", 10)
-  );
+  const [numeroProduccion, setNumeroProduccion] = useState<number>(0);
+  const [valor, setValor] = useState<string | undefined>(undefined);
 
+  // Para asegurar que `acceso` es un string y no undefined
+  const acceso: string = valor ?? 'Valor predeterminado';
   // useEffect para guardar el número de producción en localStorage
   useEffect(() => {
-    localStorage.setItem("numeroProduccion", numeroProduccion.toString());
     recargarMateriaPrima();
   }, [numeroProduccion]);
 
   // Función para recargar los datos de la API
   const recargarMateriaPrima = async () => {
     try {
-      const response = await axios.get<Product[]>("https://api.uniecosanmateo.icu/api/rawMaterials"
+      const response = await axios.get<Product[]>(
+        "https://api.uniecosanmateo.icu/api/rawMaterials"
       );
+      const identificadorMa=response.data.reduce((max,current)=>{return (current.identificadorP>max.identificadorP)?current:max;},response.data[0]);
+      console.log("Numero de produccion en la que va: ",identificadorMa.identificadorP+1);
       setProducts(response.data);
+      setNumeroProduccion(identificadorMa.identificadorP+1);
     } catch (error) {
       console.error("Error al obtener los productos", error);
     }
   };
+
+
+  //cambiara cuando acceso cambie
+  useEffect(() => {
+    localStorage.setItem("pasarT", acceso);
+  }, [acceso]); // Solo se ejecutará cuando `acceso` cambie
 
   // Mostrar el modal de confirmación
   const showTemplate = () => {
@@ -74,6 +83,7 @@ export default function NotaSalida() {
           setNumeroProduccion(numeroProduccion + 1);
           cambiarEstadoMateriaPrimaUtilizada();
           setSelectedProducts([]);
+          setValor("acceso");
         } else {
           toast.current?.show({
             severity: "error",
@@ -84,15 +94,13 @@ export default function NotaSalida() {
         }
       },
       reject,
-
-      
     });
   };
 
   // Función para cambiar el estado de los productos seleccionados
   const cambiarEstadoMateriaPrimaUtilizada = async () => {
     const fechaActual = new Date();
-    const fechaFormateada = fechaActual.toLocaleString('sv-SE');
+    const fechaFormateada = fechaActual.toLocaleString("sv-SE");
     if (selectedProducts && selectedProducts.length > 0) {
       try {
         const updatedProducts = selectedProducts.map((product) => ({
@@ -101,7 +109,8 @@ export default function NotaSalida() {
           updated_at: fechaFormateada,
         }));
 
-        await axios.put("https://api.uniecosanmateo.icu/api/rawMaterial/identificadorP",
+        await axios.put(
+          "https://api.uniecosanmateo.icu/api/rawMaterial/identificadorP",
           updatedProducts
         );
         console.log("Productos actualizados en la API");
@@ -224,7 +233,6 @@ export default function NotaSalida() {
 
   return (
     <div className="container mx-auto p-2">
-      
       <PageMeta
         title="Nota Salida"
         description="Genera la nota de salida de la materia prima"
@@ -292,7 +300,7 @@ export default function NotaSalida() {
 
       <div className="card">
         <Tooltip target=".export-buttons>button" position="bottom" />
-        <Toast ref={toast} position="bottom-left"/>
+        <Toast ref={toast} position="bottom-left" />
         <DataTable
           ref={dt}
           value={selectedProducts}
@@ -338,7 +346,7 @@ export default function NotaSalida() {
       </div>
 
       {/* Toast y ConfirmDialog para mostrar mensajes y el modal */}
-      <ConfirmDialog group="templating"  />
+      <ConfirmDialog group="templating" />
 
       {/* Visualizar el número de producción */}
       <div className="flex justify-end flex-wrap">
@@ -361,7 +369,6 @@ export default function NotaSalida() {
           label="Generar nota"
         />
         {/* <Button label="Reiniciar" icon="pi pi-refresh" severity="warning" onClick={() => setNumeroProduccion(0)} />*/}
-                
       </div>
     </div>
   );
