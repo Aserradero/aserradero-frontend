@@ -91,11 +91,14 @@ export default function NotaSalida() {
 
   // Función para cambiar el estado de los productos seleccionados
   const cambiarEstadoMateriaPrimaUtilizada = async () => {
+    const fechaActual = new Date();
+    const fechaFormateada = fechaActual.toLocaleString('sv-SE');
     if (selectedProducts && selectedProducts.length > 0) {
       try {
         const updatedProducts = selectedProducts.map((product) => ({
           ...product,
           identificadorP: numeroProduccion,
+          updated_at: fechaFormateada,
         }));
 
         await axios.put("https://api.uniecosanmateo.icu/api/rawMaterial/identificadorP",
