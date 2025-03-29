@@ -1,92 +1,50 @@
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
+import PageBreadcrumb from "../common/PageBreadCrumb";
 import { useState, useEffect, useRef } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import axios from "axios";
-import PageMeta from "../../components/common/PageMeta";
+import PageMeta from "../common/PageMeta";
 import Badge from "../ui/badge/Badge";
 import { ArrowUpIcon } from "../../icons";
-import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
-import { ProgressBar } from "primereact/progressbar";
 
-export default function Fases() {
+export default function ProductosPrecio() {
   // Definir el tipo para los productos
   interface Product {
     id: number;
-    cantidad: number;
-    diametroUno: number;
-    diametroDos: number;
-    largo: number;
-    metroCR: number;
+    precio: number;
     calidad: string;
+    cantidad: number;
+    ancho: number;
+    grosor: number;
+    largo: number;
+    piesTabla: number;
     identificadorP: number;
   }
-  interface Fase {
-    name: string;
-    code: string;
+  interface Product1 {
+    id: number;
+    idProducto: number;
+    precioUnitario: number;
+    stockIdealPT: number;
+    idUsuario: number;
   }
   //const dt = useRef(null);
   const toast = useRef<Toast>(null); // Tipar la referencia del Toast
   //const [acceso, setAcceso] = useState<string | null>();
   // Estados para almacenar los productos y productos seleccionados
   const [products, setProducts] = useState<Product[]>([]);
-  // Estado para almacenar el número de producción
-  const [numeroProduccion, setNumeroProduccion] = useState<number>(0);
-  // Estado para la fase seleccionada
-  const [selectedFase, setSelectedFase] = useState<Fase | null>(null);
-  const [value, setValue] = useState<number>(0);
-  const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(true);
-  const [isUpdated, setIsUpdated] = useState(false);
-  const faseProgreso: { [key: string]: number } = {
-    "En espera de procesamiento": 0,
-    "En aserrado": 20,
-    Desorrillado: 40,
-    "En cabezado de madera": 60,
-    "En clasificacion y almacenamiento": 80,
-    "Produccion finalizada": 100,
-  };
+  const [products1, setProducts1] = useState<Product1[]>([]);
   const [cantidadMP, setCantidadMP] = useState<Number>(
     Number(localStorage.getItem("cantidadArreglo"))
   );
 
-  // Actualizar el progreso cuando se selecciona una fase
-  useEffect(() => {
-    if (selectedFase) {
-      const newValue = faseProgreso[selectedFase.name];
-      setValue(newValue);
-
-      // Habilitar el botón cuando el progreso llega a 100%
-      if (newValue === 100) {
-        setIsButtonDisabled(false);
-      } else {
-        setIsButtonDisabled(true);
-      }
-    }
-  }, [selectedFase]);
-
-  // Opciones de calidad
-  const calidad: Fase[] = [
-    { name: "En espera de procesamiento", code: "En espera de procesamiento" },
-    { name: "En aserrado", code: "En aserrado" },
-    { name: "Desorrillado", code: "Desorillado" },
-    { name: "En cabezado de madera", code: "En cabezado de madera" },
-    { name: "En clasificacion y almacenamiento",
-      code: "En clasificacion y almacenamiento",
-    },
-    { name: "Produccion finalizada", code: "Produccion finalizada" },
-  ];
-
   // useEffect para recargar el numero de produccion
   useEffect(() => {
-    recargarMateriaPrima();
-    console.log(
-      "Numero de produccion que se mostrara en la tabla de acuerdo a los productos: ",
-      numeroProduccion
-    );
-  }, [numeroProduccion]);
+    recargarProductos();
+    recargarInventario();
+  });
 
   //cambiara cuando la cantidad cambie
   useEffect(() => {
@@ -94,39 +52,28 @@ export default function Fases() {
   }, [cantidadMP]); // Solo se ejecutara cuando la cantidad cambie
 
   // Función para recargar los datos de la API
-  const recargarMateriaPrima = async () => {
-    if (isUpdated) return;
-    try {
-      const accesoLocal = localStorage.getItem("pasarT");
-      console.log("Se esta mostrando en el condicional: ", accesoLocal);
-      setCantidadMP(
-        products.filter(
-          (product) => product.identificadorP === numeroProduccion
-        ).length
-      );
-
-      if (
-        (numeroProduccion == 0 && accesoLocal == "acceso") ||
-        cantidadMP != 0
-      ) {
+  const recargarProductos = async () => {
+     try {
         const response = await axios.get<Product[]>(
-          "https://api.uniecosanmateo.icu/api/rawMaterials"
+          "http://localhost:8000/api/products"
         );
-        setProducts(response.data);
-        const identificadorMa = response.data.reduce((max, current) => {
-          return current.identificadorP > max.identificadorP ? current : max;
-        }, response.data[0]);
-        console.log(
-          "Fase de produccion en la que esta la fase: ",
-          identificadorMa.identificadorP
-        );
-
-        setNumeroProduccion(identificadorMa.identificadorP);
-      }
+        setProducts(response.data);      
     } catch (error) {
       console.error("Error al obtener los productos", error);
     }
   };
+
+   // Función para recargar los datos de la API
+   const recargarInventario = async () => {
+    try {
+        const response = await axios.get<Product1[]>(
+        "http://localhost:8000/api/productsInventory"
+       );
+       setProducts1(response.data);      
+   } catch (error) {
+     console.error("Error al obtener los productos", error);
+   }
+ };
 
   // Mostrar el modal de confirmación
   const showTemplate = () => {
@@ -143,11 +90,7 @@ export default function Fases() {
       accept: () => {
         if (products?.length) {
           actualizarFecha();
-          //setCantidadMP(-1);
-          console.log(
-            "Una vez terminada la produccion y seleccionado el boton el numero es: ",
-            numeroProduccion
-          );
+          
           console.log("Entro a si");
           toast.current?.show({
             severity: "success",
@@ -178,10 +121,8 @@ export default function Fases() {
 
     try {
       const updatedProducts = products
-        .filter((product) => product.identificadorP === numeroProduccion)
         .map((product) => ({
           ...product,
-          identificadorP: numeroProduccion,
           updated_at: fechaFormateada,
         }));
 
@@ -190,7 +131,6 @@ export default function Fases() {
         updatedProducts
       );
       console.log("Productos actualizados en la API");
-      setIsUpdated(true); // Marcar que la actualización se completó
 
       setProducts([]);
       localStorage.removeItem("cantidadArreglo"); // <--- Limpia aquí
@@ -213,45 +153,26 @@ export default function Fases() {
       life: 3000,
     });
   };
-  const totalPiezas = products.filter(
-    (product) => product.identificadorP === numeroProduccion
-  ).length;
+  const totalPiezas = products.length;
   const volumen = products
-    .filter((product) => product.identificadorP === numeroProduccion)
-    .reduce((total, product) => total + product.metroCR, 0);
+    .reduce((total, product) => total + product.piesTabla, 2);
+    
 
   return (
     <div className="container mx-auto p-2">
       <Toast ref={toast} position="bottom-left" />
 
       <PageMeta
-        title="Fases de produccion"
-        description="Cambia las fases de produccion"
+        title="Asignar Precio"
+        description="Asignar el precio del producto"
       />
-      <PageBreadcrumb pageTitle="Fases de produccion" />
+      <PageBreadcrumb pageTitle="Productos terminados" />
 
       <div className="flex flex-wrap gap-10 justify-center">
         <div className="flex-auto">
           <label htmlFor="stacked-buttons" className="font-bold block mb-2">
-            Selecciona la fase de los rollos de madera
+            Asigna los precios de los productos
           </label>
-          <div className="p-inputgroup flex-1">
-            <span className="p-inputgroup-addon">
-              <i className="pi pi-spin pi-cog"></i>
-            </span>
-            <Dropdown
-              value={selectedFase}
-              onChange={(e) => setSelectedFase(e.value)}
-              options={calidad}
-              optionLabel="name"
-              placeholder="Seleccione la fase"
-              className="w-full md:w-100rem"
-              checkmark={true}
-              highlightOnSelect={false}
-            />
-          </div>
-          <p className="mt-4">Progreso</p>
-          <ProgressBar className="mt-2" value={value}></ProgressBar>
         </div>
 
         <div className="flex flex-row">
@@ -262,10 +183,10 @@ export default function Fases() {
             <div className="flex items-end justify-between mt-5">
               <div>
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                  Volumen Total
+                  Pies Tabla Total
                 </span>
                 <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-                  {volumen.toFixed(1)}
+                  {volumen.toFixed(2)}
                 </h4>
               </div>
               <Badge color="success">
@@ -298,50 +219,63 @@ export default function Fases() {
       </div>
 
       <div className="mt-2 p-2 block bg-primary font-bold text-center p-1 border-round mb-1">
-        <h2>ENTRADA DE MATERIA PRIMA A PRODUCCION </h2>
+        <h2>PRODUCTOS TERMINADOS CON PRECIO</h2>
       </div>
 
       {/* DataTable para mostrar los productos disponibles */}
       <div className="card">
         <DataTable
-          value={products.filter(
-            (product) => product.identificadorP === numeroProduccion
-          )}
+          value={products}
           size="small"
           paginator
           rows={3}
-          rowsPerPageOptions={[3, 6]}
+          rowsPerPageOptions={[3, 6, 9, 12]}
           tableStyle={{ minWidth: "10rem" }}
-          emptyMessage="No hay materia prima para mostrar."
+          dataKey="id"
+          emptyMessage="No hay productos para mostrar."
         >
+        <Column
+        field="precioUnitario"
+        header="Precio"
+        style={{ width: "10%" }}
+        body={(rowData) => `$ ${rowData.precioUnitario}`}
+      ></Column>
           <Column
             field="calidad"
             header="Calidad"
-            style={{ width: "20%" }}
+            style={{ width: "10%" }}
+            body={(rowData) => `${rowData.calidad}`}
           ></Column>
           <Column
-            field="diametroUno"
-            header="Diametro 1"
-            style={{ width: "20%" }}
-            body={(rowData) => `${rowData.diametroUno} cm`}
+            field="cantidad"
+            header="Cantidad"
+            style={{ width: "10%" }}
+            body={(rowData) => `${rowData.cantidad}`}
+          
           ></Column>
           <Column
-            field="diametroDos"
-            header="Diametro 2"
-            style={{ width: "20%" }}
-            body={(rowData) => `${rowData.diametroDos} cm`}
+            field="ancho"
+            header="Ancho"
+            style={{ width: "10%" }}
+            body={(rowData) => `${rowData.ancho} cm`}
+          ></Column>
+          <Column
+            field="grosor"
+            header="Grosor"
+            style={{ width: "10%" }}
+            body={(rowData) => `${rowData.grosor} cm`}
           ></Column>
           <Column
             field="largo"
             header="Largo"
-            style={{ width: "20%" }}
+            style={{ width: "10%" }}
             body={(rowData) => `${rowData.largo} cm`}
           ></Column>
           <Column
-            field="metroCR"
-            header="Metro cúbico"
-            style={{ width: "20%" }}
-            body={(rowData) => `${rowData.metroCR} m³`}
+            field="piestabla"
+            header="PiesTabla"
+            style={{ width: "10%" }}
+            body={(rowData) => `${rowData.piesTabla} m³`}
           ></Column>
         </DataTable>
         <ConfirmDialog group="templating" />
@@ -349,7 +283,6 @@ export default function Fases() {
         <div className="card flex justify-end mt-5">
           <Button
             label="Registrar produccion"
-            disabled={isButtonDisabled}
             onClick={showTemplate}
             className="p-button-success mt-3"
           />

@@ -28,6 +28,8 @@ import RegistrarP from "./components/notasalida/RegistrarP";
 import Fases from "./components/notasalida/fases";
 import ResetPass from "./pages/AuthPages/ResetPass";
 import UpdatePass from "./pages/AuthPages/UpdatePass";
+import ProductosFaltantes from "./components/inventario/ProductosFaltantes";
+import ProductosPrecio from "./components/inventario/ProductosPrecio";
 
 
 export default function App() {
@@ -51,8 +53,11 @@ export default function App() {
             <Route path="/fases" element={<Fases />} />
             <Route path="/notasalida" element={<NotaSalida />} />
 
-              {/* Tables */}
-              <Route path="/basic-tables" element={<BasicTables />} />
+            {/* Tables */}
+            <Route path="/basic-tables" element={<BasicTables />} />
+            <Route path="/productosfaltantes" element={<ProductosFaltantes />} />
+            <Route path="/productosprecio" element={<ProductosPrecio />} />
+              
 
               {/* Ui Elements */}
               <Route path="/alerts" element={<Alerts />} />

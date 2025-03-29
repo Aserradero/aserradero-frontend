@@ -42,7 +42,12 @@ const navItems: NavItem[] = [
   {
     name: "Inventario",
     icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
+    subItems: [
+      { name: "Productos faltantes", path: "/ProductosFaltantes", pro: false },
+      { name: "Asignación de precio a productos", path: "/ProductosPrecio", pro: false },
+      { name: "Basic Tables", path: "/basic-tables", pro: false }
+
+    ],
   },
   {
     name: "Ventas",

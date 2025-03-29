@@ -22,7 +22,7 @@ interface ProductoGuardado {
     idUsuario: number;
     // Puedes agregar más campos según sea necesario
 }
-export default function RegistrarP() {
+export default function ProductosFaltantes() {
     const [visible, setVisible] = useState<boolean>(false);
     const toast = useRef<Toast>(null);
     const [productosRegistrados, setProductosRegistrados] = useState<any[]>([]);
@@ -35,6 +35,7 @@ export default function RegistrarP() {
 
     // Estado para la calidad seleccionada
     const [selectedCalidad, setSelectedCalidad] = useState<Calidad | null>(null);
+
 
     // Opciones de calidad
     const calidad: Calidad[] = [
@@ -58,7 +59,7 @@ export default function RegistrarP() {
         // Recalcular piesTabla después de la edición
         _productos[index] = {
             ...newData,
-            piesTabla: ((newData.ancho * newData.largo * newData.grosor * newData.cantidad) / 12).toFixed(0)
+            piesTabla: ((newData.ancho * newData.largo * newData.grosor * newData.cantidad) / 12).toFixed(2)
         };
 
         setProductosRegistrados(_productos);
@@ -117,8 +118,8 @@ export default function RegistrarP() {
         setProductosRegistrados([...productosRegistrados, nuevoProducto]);
         toast.current?.show({
             severity: "success",
-            summary: "Producto Registrado", 
-            detail: "El producto ha sido agregado a la lista.",
+            summary: "Producto registrado",
+            detail: "El producto se agrego a la lista.",
             life: 3000,
         });    
     
@@ -150,7 +151,7 @@ export default function RegistrarP() {
         toast.current?.show({
             severity: 'info',
             summary: 'Producto Eliminado',
-            detail: 'El producto ha sido eliminado de la lista.',
+            detail: 'El producto se elimino de la lista.',
             life: 3000,
         });
     };
@@ -164,7 +165,7 @@ export default function RegistrarP() {
         toast.current?.show({
             severity: "warn",
             summary: "Sin productos",
-            detail: "No hay productos para registrar.",
+            detail: "No hay productos ha registrar.",
             life: 3000,
         });
         return;
@@ -199,12 +200,12 @@ export default function RegistrarP() {
         if (response.status === 201) {
             console.log("Productos registrados correctamente");
             // Llamar a la función para registrar el inventario usando los ids de los productos
-            registrarInventario(response.data.productos);
+             registrarInventario(response.data.productos);
 
             toast.current?.show({
                 severity: "success",
                 summary: "Registro exitoso",
-                detail: "Todos los productos han sido registrados",
+                detail: "Todos los productos han sido registrados.",
                 life: 3000,
             });
 
@@ -221,6 +222,7 @@ export default function RegistrarP() {
         });
     }
 };
+
 const registrarInventario = async (productosGuardados: ProductoGuardado[]) => {
     if (productosGuardados.length === 0) {
         toast.current?.show({
@@ -278,11 +280,10 @@ const registrarInventario = async (productosGuardados: ProductoGuardado[]) => {
 };
 
 
-
     return (
         <>
-            <PageMeta title="Registrar Productos" description="Registrar los productos terminados" />
-            <PageBreadcrumb pageTitle="Registar las medidas del producto" />
+            <PageMeta title="Productos Faltantes" description="Registrar los productos faltantes" />
+            <PageBreadcrumb pageTitle="Registra las medidas del producto" />
 
             <div className="card flex flex-wrap gap-3 p-fluid mt-2">
                 <div className="flex-auto">
@@ -297,8 +298,10 @@ const registrarInventario = async (productosGuardados: ProductoGuardado[]) => {
                             onValueChange={(e) => setValue1(e.value ?? null)} 
                             minFractionDigits={2} 
                             maxFractionDigits={5} 
-                            min={0} 
+                            min={1} 
                             showButtons 
+                            incrementButtonClassName="p-button-info"
+                            decrementButtonClassName="p-button-info"
                         />
                     </div>
                 </div>
@@ -315,8 +318,10 @@ const registrarInventario = async (productosGuardados: ProductoGuardado[]) => {
                             onValueChange={(e) => setValue2(e.value ?? null)} 
                             minFractionDigits={2} 
                             maxFractionDigits={5} 
-                            min={0} 
+                            min={1} 
                             showButtons 
+                            incrementButtonClassName="p-button-info"
+                            decrementButtonClassName="p-button-info"
                         />
                     </div>
                 </div>
@@ -333,8 +338,12 @@ const registrarInventario = async (productosGuardados: ProductoGuardado[]) => {
                             onValueChange={(e) => setValue3(e.value ?? null)} 
                             minFractionDigits={2} 
                             maxFractionDigits={5} 
-                            min={0} 
+                            min={1} 
+                            mode="decimal"
                             showButtons 
+                            incrementButtonClassName="p-button-info"
+                            decrementButtonClassName="p-button-info"
+                           
                         />
                     </div>
                 </div>
@@ -371,7 +380,9 @@ const registrarInventario = async (productosGuardados: ProductoGuardado[]) => {
                             onValueChange={(e) => setValue4(e.value ?? null)} 
                             mode="decimal" 
                             showButtons 
-                            min={0} 
+                            incrementButtonClassName="p-button-info"
+                            decrementButtonClassName="p-button-info"
+                            min={1} 
                             max={1000} 
                             minFractionDigits={0} 
                             maxFractionDigits={0} 
@@ -457,7 +468,7 @@ const registrarInventario = async (productosGuardados: ProductoGuardado[]) => {
             <div className="card flex justify-end mt-5">
             <Button 
             onClick={registrarProductos} 
-            icon="pi pi-cloud-upload" 
+            icon="pi pi-shopping-cart" 
             label="Registrar" 
             severity="success" 
             rounded 
